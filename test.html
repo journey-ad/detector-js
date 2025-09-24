@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detector.js 交互测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f8f9fa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .test-panel {
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 8px;
+    }
+
+    .controls {
+      margin: 15px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #229954;
+    }
+
+    .btn-warning {
+      background: #f39c12;
+      color: white;
+    }
+
+    .btn-warning:hover {
+      background: #e67e22;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-purple {
+      background: #a95cc8;
+      color: white;
+    }
+
+    .btn-purple:hover {
+      background: #9e48c1;
+    }
+
+    .event-log {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 15px 0;
+    }
+
+    .event-item {
+      margin: 3px 0;
+      padding: 2px 0;
+    }
+
+    .event-get {
+      color: #8fd2ff;
+    }
+
+    .event-set {
+      color: #ff3b78;
+    }
+
+    .event-apply {
+      color: #f9a521;
+    }
+
+    .event-construct {
+      color: #db85ff;
+    }
+
+    .event-apply-resolved {
+      color: #47f590;
+    }
+
+    .event-apply-rejected {
+      color: #ff7566;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 15px 0;
+    }
+
+    .stat-item {
+      background: #ecf0f1;
+      padding: 10px 15px;
+      border-radius: 4px;
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
+
+    .code-display {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      margin: 10px 0;
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 10px 0;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 5px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #2c3e50;
+    }
+
+    .clear-btn {
+      background: #95a5a6;
+      color: white;
+      margin-left: auto;
+    }
+
+    .clear-btn:hover {
+      background: #7f8c8d;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🔍 Detector.js 交互测试面板</h1>
+
+    <!-- 基本对象操作测试 -->
+    <div class="test-panel">
+      <div class="test-title">📦 基本对象操作</div>
+
+      <div class="toggle-group">
+        <label><input type="checkbox"
+                 id="enableBasic"
+                 checked> 启用检测</label>
+        <label><input type="checkbox"
+                 id="filterBasic"> 仅监听 name 属性</label>
+      </div>
+
+      <div class="code-display">
+        testObj = { name: "张三", age: 25, city: "北京" }
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary"
+                onclick="readName()">读取 name</button>
+        <button class="btn-primary"
+                onclick="readAge()">读取 age</button>
+        <button class="btn-success"
+                onclick="setName()">设置 name</button>
+        <button class="btn-success"
+                onclick="setAge()">设置 age</button>
+        <button class="btn-warning"
+                onclick="addProperty()">添加新属性</button>
+        <button class="btn-danger"
+                onclick="deleteProperty()">删除属性</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number"
+               id="basicGetCount">0</div>
+          <div class="stat-label">GET 操作</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="basicSetCount">0</div>
+          <div class="stat-label">SET 操作</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="basicDeleteCount">0</div>
+          <div class="stat-label">DELETE 操作</div>
+        </div>
+      </div>
+
+      <div class="event-log"
+           id="basicLog">
+        <div style="color: #95a5a6; text-align: center;">等待操作...</div>
+      </div>
+      <button class="clear-btn"
+              onclick="clearBasicLog()">清空日志</button>
+    </div>
+
+    <!-- 函数调用测试 -->
+    <div class="test-panel">
+      <div class="test-title">🔧 函数调用测试</div>
+
+      <div class="code-display">
+        api = {<br>
+        &nbsp;&nbsp;add: (a, b) => a + b,<br>
+        &nbsp;&nbsp;fetchData: async (id) => Promise.resolve(`数据${id}`),<br>
+        &nbsp;&nbsp;Calculator: function(initial) { this.value = initial; }<br>
+        }
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary"
+                onclick="callAdd()">调用 add(5, 3)</button>
+        <button class="btn-success"
+                onclick="callAsync()">异步调用 fetchData(123)</button>
+        <button class="btn-danger"
+                onclick="callAsyncError()">异步调用 fetchError(123)</button>
+        <button class="btn-purple"
+                onclick="createInstance()">new Calculator(100)</button>
+        <button class="btn-primary"
+                onclick="accessFunction()">访问函数对象</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number"
+               id="funcCallCount">0</div>
+          <div class="stat-label">函数调用</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="funcAsyncCount">0</div>
+          <div class="stat-label">异步解析</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="funcConstructCount">0</div>
+          <div class="stat-label">构造调用</div>
+        </div>
+      </div>
+
+      <div class="event-log"
+           id="funcLog">
+        <div style="color: #95a5a6; text-align: center;">等待操作...</div>
+      </div>
+      <button class="clear-btn"
+              onclick="clearFuncLog()">清空日志</button>
+    </div>
+
+    <!-- 深层对象测试 -->
+    <div class="test-panel">
+      <div class="test-title">🌊 深层对象访问</div>
+
+      <div class="toggle-group">
+        <label>深度限制: <select id="depthLimit">
+            <option value="1">1 层</option>
+            <option value="2"
+                    selected>2 层</option>
+            <option value="3">3 层</option>
+            <option value="Infinity">无限制</option>
+          </select></label>
+      </div>
+
+      <div class="code-display">
+        deepObj = {<br>
+        &nbsp;&nbsp;user: {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;profile: {<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;settings: { theme: "暗色", lang: "zh" }<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+        &nbsp;&nbsp;}<br>
+        }
+      </div>
+
+      <div class="controls">
+        <button class="btn-primary"
+                onclick="accessDeep1()">访问 user</button>
+        <button class="btn-primary"
+                onclick="accessDeep2()">访问 user.profile</button>
+        <button class="btn-primary"
+                onclick="accessDeep3()">访问 user.profile.settings</button>
+        <button class="btn-warning"
+                onclick="accessDeepest()">访问 settings.theme</button>
+        <button class="btn-success"
+                onclick="setDeepValue()">修改深层值</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number"
+               id="deepAccessCount">0</div>
+          <div class="stat-label">访问次数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="deepMaxDepth">0</div>
+          <div class="stat-label">最大深度</div>
+        </div>
+      </div>
+
+      <div class="event-log"
+           id="deepLog">
+        <div style="color: #95a5a6; text-align: center;">等待操作...</div>
+      </div>
+      <button class="clear-btn"
+              onclick="clearDeepLog()">清空日志</button>
+    </div>
+
+    <!-- 全局统计 -->
+    <div class="test-panel">
+      <div class="test-title">📊 全局统计</div>
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-number"
+               id="totalEvents">0</div>
+          <div class="stat-label">总事件数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="totalGet">0</div>
+          <div class="stat-label">GET</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="totalSet">0</div>
+          <div class="stat-label">SET</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="totalApply">0</div>
+          <div class="stat-label">APPLY</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number"
+               id="totalOther">0</div>
+          <div class="stat-label">其他</div>
+        </div>
+      </div>
+      <button class="btn-danger"
+              onclick="resetAll()">重置所有</button>
+    </div>
+  </div>
+
+  <script src="./detector.js"></script>
+  <script>
+    // 全局状态
+    let stats = {
+      total: 0,
+      get: 0,
+      set: 0,
+      apply: 0,
+      construct: 0,
+      delete: 0,
+      resolved: 0,
+      rejected: 0
+    };
+
+    // 测试对象
+    let testObj = { name: "张三", age: 25, city: "北京" };
+    let proxyTestObj = null;
+
+    let api = {
+      add: (a, b) => a + b,
+      fetchData: async (id) => new Promise(resolve =>
+        setTimeout(() => resolve(`数据${id}`), 500)
+      ),
+      fetchError: async (id) => new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error(`数据${id}获取失败`)), 500)
+      ),
+      Calculator: function (initial) { this.value = initial; }
+    };
+    let proxyApi = null;
+
+    let deepObj = {
+      user: {
+        profile: {
+          settings: { theme: "暗色", lang: "zh" }
+        }
+      }
+    };
+    let proxyDeepObj = null;
+
+    // 初始化代理对象
+    function initProxies() {
+      // 基本对象代理
+      const enableBasic = document.getElementById('enableBasic').checked;
+      const filterBasic = document.getElementById('filterBasic').checked;
+
+      proxyTestObj = createDetector(testObj, (event) => {
+        logEvent('basicLog', event);
+        updateBasicStats(event);
+        updateGlobalStats(event);
+      }, {
+        enable: enableBasic,
+        include: filterBasic ? ['name'] : null
+      });
+
+      // 函数对象代理
+      proxyApi = createDetector(api, (event) => {
+        logEvent('funcLog', event);
+        updateFuncStats(event);
+        updateGlobalStats(event);
+      });
+
+      // 深层对象代理
+      const depthLimit = document.getElementById('depthLimit').value;
+      proxyDeepObj = createDetector(deepObj, (event) => {
+        logEvent('deepLog', event);
+        updateDeepStats(event);
+        updateGlobalStats(event);
+      }, {
+        depthLimit: depthLimit === 'Infinity' ? Infinity : parseInt(depthLimit)
+      });
+    }
+
+    // 事件日志记录
+    function logEvent(logId, event) {
+      console.log('🤖 logEvent', logId, event);
+
+      const logContainer = document.getElementById(logId);
+      if (logContainer.children.length === 1 && logContainer.children[0].style.color === 'rgb(149, 165, 166)') {
+        logContainer.innerHTML = '';
+      }
+
+      const eventDiv = document.createElement('div');
+      eventDiv.className = `event-item event-${event.type.replace(':', '-')}`;
+
+      let logText = `[${new Date().toLocaleTimeString()}] ${event.type.toUpperCase()}: ${event.accessor}`;
+
+      if (event.args) {
+        logText += `(${event.args.map(arg => JSON.stringify(arg)).join(', ')})`;
+      }
+      if (event.value !== undefined) {
+        logText += ` = ${JSON.stringify(event.value)}`;
+      }
+      if (event.result !== undefined && !event.isPromise) {
+        logText += ` → ${JSON.stringify(event.result)}`;
+      }
+      if (event.isPromise) {
+        logText += ` → Promise${event.result && event.type === 'apply:resolved' ? ` ✅${JSON.stringify(event.result)}` : ''}`;
+      }
+      if (event.error) {
+        logText += ` ❌${event.error.message}`;
+      }
+
+      eventDiv.textContent = logText;
+      logContainer.appendChild(eventDiv);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    // 统计更新函数
+    function updateBasicStats(event) {
+      if (event.type === 'get') {
+        incrementElement('basicGetCount');
+      } else if (event.type === 'set') {
+        incrementElement('basicSetCount');
+      } else if (event.type === 'deleteProperty') {
+        incrementElement('basicDeleteCount');
+      }
+    }
+
+    function updateFuncStats(event) {
+      if (event.type === 'apply') {
+        incrementElement('funcCallCount');
+      } else if (event.type === 'apply:resolved') {
+        incrementElement('funcAsyncCount');
+      } else if (event.type === 'construct') {
+        incrementElement('funcConstructCount');
+      }
+    }
+
+    function updateDeepStats(event) {
+      incrementElement('deepAccessCount');
+      const depth = event.path.length;
+      const currentMaxDepth = parseInt(document.getElementById('deepMaxDepth').textContent);
+      if (depth > currentMaxDepth) {
+        document.getElementById('deepMaxDepth').textContent = depth;
+      }
+    }
+
+    function updateGlobalStats(event) {
+      stats.total++;
+      document.getElementById('totalEvents').textContent = stats.total;
+
+      if (event.type === 'get') {
+        stats.get++;
+        document.getElementById('totalGet').textContent = stats.get;
+      } else if (event.type === 'set') {
+        stats.set++;
+        document.getElementById('totalSet').textContent = stats.set;
+      } else if (event.type === 'apply' || event.type === 'apply:resolved' || event.type === 'apply:rejected') {
+        stats.apply++;
+        document.getElementById('totalApply').textContent = stats.apply;
+      } else {
+        stats.other = (stats.other || 0) + 1;
+        document.getElementById('totalOther').textContent = stats.other;
+      }
+    }
+
+    function incrementElement(id) {
+      const el = document.getElementById(id);
+      el.textContent = parseInt(el.textContent) + 1;
+    }
+
+    // 基本对象操作函数
+    window.readName = () => {
+      const result = proxyTestObj.name;
+      console.log('读取 name:', result);
+    };
+
+    window.readAge = () => {
+      const result = proxyTestObj.age;
+      console.log('读取 age:', result);
+    };
+
+    window.setName = () => {
+      const newName = prompt('输入新的姓名:', '李四') || '李四';
+      proxyTestObj.name = newName;
+      testObj.name = newName; // 同步原对象
+    };
+
+    window.setAge = () => {
+      const newAge = parseInt(prompt('输入新的年龄:', '30')) || 30;
+      proxyTestObj.age = newAge;
+      testObj.age = newAge;
+    };
+
+    window.addProperty = () => {
+      const key = prompt('属性名:', 'email') || 'email';
+      const value = prompt('属性值:', 'test@example.com') || 'test@example.com';
+      proxyTestObj[key] = value;
+      testObj[key] = value;
+    };
+
+    window.deleteProperty = () => {
+      const key = prompt('删除哪个属性?', 'city') || 'city';
+      delete proxyTestObj[key];
+      delete testObj[key];
+    };
+
+    // 函数调用测试函数
+    window.callAdd = () => {
+      const result = proxyApi.add(5, 3);
+      console.log('add(5, 3) =', result);
+    };
+
+    window.callAsync = async () => {
+      try {
+        const result = await proxyApi.fetchData(123);
+        console.log('fetchData(123) =', result);
+      } catch (error) {
+        console.error('异步调用失败:', error);
+      }
+    };
+
+    window.callAsyncError = async () => {
+      try {
+        const result = await proxyApi.fetchError(123);
+        console.log('fetchError(123) =', result);
+      } catch (error) {
+        console.error('异步调用失败:', error);
+      }
+    };
+
+    window.createInstance = () => {
+      const instance = new proxyApi.Calculator(100);
+      console.log('new Calculator(100) =', instance);
+    };
+
+    window.accessFunction = () => {
+      const func = proxyApi.add;
+      console.log('访问函数对象:', typeof func);
+    };
+
+    // 深层对象测试函数
+    window.accessDeep1 = () => {
+      const result = proxyDeepObj.user;
+      console.log('user =', result);
+    };
+
+    window.accessDeep2 = () => {
+      const result = proxyDeepObj.user.profile;
+      console.log('user.profile =', result);
+    };
+
+    window.accessDeep3 = () => {
+      const result = proxyDeepObj.user.profile.settings;
+      console.log('user.profile.settings =', result);
+    };
+
+    window.accessDeepest = () => {
+      const result = proxyDeepObj.user.profile.settings.theme;
+      console.log('settings.theme =', result);
+    };
+
+    window.setDeepValue = () => {
+      const newTheme = prompt('设置新主题:', '亮色') || '亮色';
+      proxyDeepObj.user.profile.settings.theme = newTheme;
+      deepObj.user.profile.settings.theme = newTheme;
+    };
+
+    // 清空日志函数
+    window.clearBasicLog = () => {
+      document.getElementById('basicLog').innerHTML = '<div style="color: #95a5a6; text-align: center;">等待操作...</div>';
+    };
+
+    window.clearFuncLog = () => {
+      document.getElementById('funcLog').innerHTML = '<div style="color: #95a5a6; text-align: center;">等待操作...</div>';
+    };
+
+    window.clearDeepLog = () => {
+      document.getElementById('deepLog').innerHTML = '<div style="color: #95a5a6; text-align: center;">等待操作...</div>';
+    };
+
+    // 重置所有统计
+    window.resetAll = () => {
+      stats = { total: 0, get: 0, set: 0, apply: 0, construct: 0, delete: 0, resolved: 0, rejected: 0 };
+
+      // 重置所有计数器
+      document.querySelectorAll('.stat-number').forEach(el => el.textContent = '0');
+
+      // 清空所有日志
+      clearBasicLog();
+      clearFuncLog();
+      clearDeepLog();
+
+      // 重新初始化代理对象
+      initProxies();
+    };
+
+    // 监听配置变化
+    document.getElementById('enableBasic').addEventListener('change', initProxies);
+    document.getElementById('filterBasic').addEventListener('change', initProxies);
+    document.getElementById('depthLimit').addEventListener('change', initProxies);
+
+    // 初始化
+    initProxies();
+  </script>
+</body>
+
+</html>
